@@ -1,17 +1,23 @@
 // Adaptive Dread - entry point
-// Milestone 0: open a window and move the player around with WASD.
+// Milestone 1: tile map with walls and player collision.
 
 #include "raylib.h"
+#include "map.h"
 
-#define SCREEN_WIDTH  1280
-#define SCREEN_HEIGHT 720
-#define PLAYER_SIZE   32.0f
+#define SCREEN_WIDTH  (MAP_COLS * TILE_SIZE)
+#define SCREEN_HEIGHT (MAP_ROWS * TILE_SIZE)
+#define PLAYER_SIZE   24.0f    // a bit smaller than a tile so the player fits through doorways
 #define PLAYER_SPEED  220.0f   // pixels per second
 
 typedef struct {
     Vector2 position;
     float speed;
 } Player;
+
+static Rectangle PlayerRect(Vector2 pos)
+{
+    return (Rectangle){ pos.x, pos.y, PLAYER_SIZE, PLAYER_SIZE };
+}
 
 static void UpdatePlayer(Player *player, float dt)
 {
@@ -28,15 +34,16 @@ static void UpdatePlayer(Player *player, float dt)
         dir.y *= 0.7071f;
     }
 
-    // Multiply by dt so speed is the same at any frame rate
-    player->position.x += dir.x * player->speed * dt;
-    player->position.y += dir.y * player->speed * dt;
+    // Move one axis at a time. If a move would put us inside a wall, cancel only
+    // that axis -- this lets the player slide along walls instead of sticking.
+    Vector2 next = player->position;
 
-    // Keep the player on screen
-    if (player->position.x < 0) player->position.x = 0;
-    if (player->position.y < 0) player->position.y = 0;
-    if (player->position.x > SCREEN_WIDTH - PLAYER_SIZE)  player->position.x = SCREEN_WIDTH - PLAYER_SIZE;
-    if (player->position.y > SCREEN_HEIGHT - PLAYER_SIZE) player->position.y = SCREEN_HEIGHT - PLAYER_SIZE;
+    next.x += dir.x * player->speed * dt;
+    if (!RectHitsWall(PlayerRect(next))) player->position.x = next.x;
+    else next.x = player->position.x;
+
+    next.y += dir.y * player->speed * dt;
+    if (!RectHitsWall(PlayerRect(next))) player->position.y = next.y;
 }
 
 int main(void)
@@ -44,8 +51,9 @@ int main(void)
     InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Adaptive Dread");
     SetTargetFPS(60);
 
+    // Start in the top-left room (tile 2,2), clear of any walls
     Player player = {
-        .position = { SCREEN_WIDTH / 2.0f, SCREEN_HEIGHT / 2.0f },
+        .position = { 2 * TILE_SIZE + 4, 2 * TILE_SIZE + 4 },
         .speed = PLAYER_SPEED
     };
 
@@ -55,10 +63,11 @@ int main(void)
         UpdatePlayer(&player, dt);
 
         BeginDrawing();
-        ClearBackground((Color){ 15, 15, 20, 255 });
+        ClearBackground(BLACK);
+        DrawMap();
         DrawRectangleV(player.position, (Vector2){ PLAYER_SIZE, PLAYER_SIZE }, (Color){ 200, 40, 40, 255 });
-        DrawText("Adaptive Dread - WASD to move", 20, 20, 20, LIGHTGRAY);
-        DrawFPS(SCREEN_WIDTH - 100, 20);
+        DrawText("Adaptive Dread - WASD to move", 44, 40, 20, LIGHTGRAY);
+        DrawFPS(SCREEN_WIDTH - 110, 40);
         EndDrawing();
     }
 
