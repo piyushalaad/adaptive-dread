@@ -2,7 +2,7 @@
 
 A top-down survival horror game written in C with [raylib](https://www.raylib.com/).
 
-> 🚧 **In progress**
+> **In progress**
 
 ## Planned features
 - **Enemy AI:** A* pathfinding and a finite state machine (patrol → investigate → chase → attack)
