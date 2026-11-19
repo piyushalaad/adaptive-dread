@@ -22,4 +22,6 @@ The first build downloads and compiles [raylib](https://github.com/raysan5/rayli
 | Key | Action |
 |-----|--------|
 | WASD | Move |
+| TAB | Show/hide the enemy's A* path |
+| H | Toggle A* heuristic (compare with Dijkstra) |
 | Esc | Quit |
