@@ -51,6 +51,29 @@ bool RectHitsWall(Rectangle rect)
     return false;
 }
 
+#define RAY_STEP 4.0f   // pixels between samples; smaller than a tile, so walls can't be skipped
+
+Vector2 CastRay(Vector2 from, Vector2 to)
+{
+    float dx = to.x - from.x;
+    float dy = to.y - from.y;
+    float dist = sqrtf(dx * dx + dy * dy);
+    int steps = (int)(dist / RAY_STEP);
+
+    for (int i = 1; i <= steps; i++) {
+        float t = (i * RAY_STEP) / dist;
+        Vector2 p = { from.x + dx * t, from.y + dy * t };
+        if (IsWallAt((int)floorf(p.x / TILE_SIZE), (int)floorf(p.y / TILE_SIZE))) return p;
+    }
+    return to;
+}
+
+bool HasLineOfSight(Vector2 from, Vector2 to)
+{
+    Vector2 hit = CastRay(from, to);
+    return hit.x == to.x && hit.y == to.y;
+}
+
 void DrawMap(void)
 {
     for (int row = 0; row < MAP_ROWS; row++) {

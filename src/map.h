@@ -14,6 +14,13 @@ bool IsWallAt(int col, int row);
 // True if any part of the rectangle overlaps a wall tile.
 bool RectHitsWall(Rectangle rect);
 
+// True if a straight line between two pixel positions doesn't pass through a wall.
+bool HasLineOfSight(Vector2 from, Vector2 to);
+
+// Walks from `from` toward `to` and returns the first point that hits a wall
+// (or `to` itself if nothing is in the way). Used to draw vision cones.
+Vector2 CastRay(Vector2 from, Vector2 to);
+
 // Draw every wall and floor tile.
 void DrawMap(void);
 
